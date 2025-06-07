@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aventura Pesca - Equipamiento y Accesorios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .hero-bg {
+            background-image: url('https://placehold.co/1920x800/3498db/ffffff?text=Bienvenidos+a+Aventura+Pesca');
+            background-size: cover;
+            background-position: center;
+        }
+        .product-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .btn-primary {
+            background-color: #3498db; /* Azul principal */
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #2980b9; /* Azul más oscuro al pasar el mouse */
+        }
+        .btn-secondary {
+            background-color: #2ecc71; /* Verde para "Añadir al carrito" */
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background-color: #27ae60; /* Verde más oscuro */
+        }
+        /* Estilos para el scrollbar del carrito y resumen de pago */
+        #cart-items-container::-webkit-scrollbar,
+        #payment-summary-items::-webkit-scrollbar {
+            width: 8px;
+        }
+        #cart-items-container::-webkit-scrollbar-track,
+        #payment-summary-items::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        #cart-items-container::-webkit-scrollbar-thumb,
+        #payment-summary-items::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        #cart-items-container::-webkit-scrollbar-thumb:hover,
+        #payment-summary-items::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        .payment-option-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .payment-option-card:hover, .payment-option-card.selected {
+            border-color: #3498db;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .payment-details {
+            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+        .payment-details.visible {
+            max-height: 500px; /* Altura suficiente para el contenido */
+            opacity: 1;
+        }
+        #cart-modal-content {
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+        #cart-items-container {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-slate-800 text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex-shrink-0">
+                    <a href="#home" class="text-3xl font-bold tracking-tight">
+                        🎣 Aventura<span class="text-blue-400">Pesca</span>
+                    </a>
+                </div>
+                <nav class="hidden md:flex space-x-6 items-center">
+                    <a href="#home" class="hover:text-blue-300 px-3 py-2 rounded-md text-sm font-medium">Inicio</a>
+                    <a href="#productos" class="hover:text-blue-300 px-3 py-2 rounded-md text-sm font-medium">Productos</a>
+                    <a href="#ofertas" class="hover:text-blue-300 px-3 py-2 rounded-md text-sm font-medium">Ofertas</a>
+                    <a href="#nosotros" class="hover:text-blue-300 px-3 py-2 rounded-md text-sm font-medium">Nosotros</a>
+                    <a href="#contacto" class="hover:text-blue-300 px-3 py-2 rounded-md text-sm font-medium">Contacto</a>
+                </nav>
+                <div class="flex items-center">
+                    <div class="ml-4 flow-root lg:ml-6">
+                        <a href="#" id="cart-button" class="group -m-2 flex items-center p-2">
+                            <svg class="h-6 w-6 flex-shrink-0 text-white group-hover:text-blue-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                            </svg>
+                            <span id="cart-count" class="ml-2 text-sm font-medium text-white group-hover:text-blue-300 bg-red-500 px-1.5 py-0.5 rounded-full hidden">0</span>
+                            <span class="sr-only">items in cart, view bag</span>
+                        </a>
+                    </div>
+                    <div class="md:hidden ml-3">
+                        <button id="mobile-menu-button" class="text-white hover:text-blue-300 focus:outline-none">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="mobile-menu" class="md:hidden hidden bg-slate-700">
+            <a href="#home" class="block px-4 py-3 text-sm hover:bg-slate-600">Inicio</a>
+            <a href="#productos" class="block px-4 py-3 text-sm hover:bg-slate-600">Productos</a>
+            <a href="#ofertas" class="block px-4 py-3 text-sm hover:bg-slate-600">Ofertas</a>
+            <a href="#nosotros" class="block px-4 py-3 text-sm hover:bg-slate-600">Nosotros</a>
+            <a href="#contacto" class="block px-4 py-3 text-sm hover:bg-slate-600">Contacto</a>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <!-- Hero Section -->
+        <section id="home" class="hero-bg text-white py-20 md:py-32">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center bg-black bg-opacity-50 p-8 rounded-lg">
+                <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
+                    Tu Aventura de Pesca Comienza Aquí
+                </h1>
+                <p class="text-lg sm:text-xl md:text-2xl mb-10 max-w-2xl mx-auto">
+                    Encuentra el mejor equipamiento, cañas, reels, señuelos y todo lo que necesitas para una jornada de pesca inolvidable.
+                </p>
+                <a href="#productos" class="btn-primary font-semibold py-3 px-8 rounded-lg text-lg shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                    Ver Productos
+                </a>
+            </div>
+        </section>
+
+        <!-- Products Section -->
+        <section id="productos" class="py-16 sm:py-20 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl sm:text-4xl font-bold text-center mb-12 text-slate-700">Nuestros Productos Destacados</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                    <!-- Producto 1 -->
+                    <div class="product-card bg-gray-50 rounded-xl shadow-md overflow-hidden flex flex-col" data-id="prod1" data-name="Caña de Pescar Pro Master" data-price="12500" data-image="https://placehold.co/400x300/2ecc71/ffffff?text=Caña+Pro+Master">
+                        <img src="https://placehold.co/400x300/2ecc71/ffffff?text=Caña+Pro+Master" alt="Caña de Pescar Profesional" class="w-full h-56 object-cover">
+                        <div class="p-6 flex flex-col flex-grow">
+                            <h3 class="text-xl font-semibold mb-2 text-slate-700">Caña de Pescar Pro Master</h3>
+                            <p class="text-gray-600 text-sm mb-4 flex-grow">Ideal para pesca variada, ligera y resistente. Material de carbono de alta densidad.</p>
+                            <p class="text-2xl font-bold text-blue-600 mb-4">ARS $12,500.00</p>
+                            <button class="btn-secondary add-to-cart-btn font-semibold py-2 px-4 rounded-lg w-full mt-auto">
+                                Añadir al Carrito
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Producto 2 -->
+                    <div class="product-card bg-gray-50 rounded-xl shadow-md overflow-hidden flex flex-col" data-id="prod2" data-name="Reel Ultra Spin X3000" data-price="9800" data-image="https://placehold.co/400x300/3498db/ffffff?text=Reel+Ultra+Spin">
+                        <img src="https://placehold.co/400x300/3498db/ffffff?text=Reel+Ultra+Spin" alt="Reel Ultra Ligero" class="w-full h-56 object-cover">
+                        <div class="p-6 flex flex-col flex-grow">
+                            <h3 class="text-xl font-semibold mb-2 text-slate-700">Reel Ultra Spin X3000</h3>
+                            <p class="text-gray-600 text-sm mb-4 flex-grow">Reel de spinning ultra ligero con 8 rulemanes, freno preciso y suave recuperación.</p>
+                            <p class="text-2xl font-bold text-blue-600 mb-4">ARS $9,800.00</p>
+                            <button class="btn-secondary add-to-cart-btn font-semibold py-2 px-4 rounded-lg w-full mt-auto">
+                                Añadir al Carrito
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Producto 3 -->
+                    <div class="product-card bg-gray-50 rounded-xl shadow-md overflow-hidden flex flex-col" data-id="prod3" data-name="Set de Señuelos ProAttack" data-price="5250" data-image="https://placehold.co/400x300/e74c3c/ffffff?text=Set+Señuelos+Pro">
+                        <img src="https://placehold.co/400x300/e74c3c/ffffff?text=Set+Señuelos+Pro" alt="Set de Señuelos" class="w-full h-56 object-cover">
+                        <div class="p-6 flex flex-col flex-grow">
+                            <h3 class="text-xl font-semibold mb-2 text-slate-700">Set de Señuelos ProAttack</h3>
+                            <p class="text-gray-600 text-sm mb-4 flex-grow">Kit de 25 señuelos variados para diferentes especies y condiciones de pesca. Incluye caja organizadora.</p>
+                            <p class="text-2xl font-bold text-blue-600 mb-4">ARS $5,250.00</p>
+                            <button class="btn-secondary add-to-cart-btn font-semibold py-2 px-4 rounded-lg w-full mt-auto">
+                                Añadir al Carrito
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Producto 4 -->
+                    <div class="product-card bg-gray-50 rounded-xl shadow-md overflow-hidden flex flex-col" data-id="prod4" data-name="Línea Multifilamento PowerBraid" data-price="3100" data-image="https://placehold.co/400x300/f1c40f/000000?text=Linea+Multifilamento">
+                        <img src="https://placehold.co/400x300/f1c40f/000000?text=Linea+Multifilamento" alt="Línea Multifilamento" class="w-full h-56 object-cover">
+                        <div class="p-6 flex flex-col flex-grow">
+                            <h3 class="text-xl font-semibold mb-2 text-slate-700">Línea Multifilamento PowerBraid</h3>
+                            <p class="text-gray-600 text-sm mb-4 flex-grow">Rollo de 150m de multifilamento de 8 hebras, alta resistencia a la abrasión y nula elasticidad.</p>
+                            <p class="text-2xl font-bold text-blue-600 mb-4">ARS $3,100.00</p>
+                            <button class="btn-secondary add-to-cart-btn font-semibold py-2 px-4 rounded-lg w-full mt-auto">
+                                Añadir al Carrito
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action / Offers Section -->
+        <section id="ofertas" class="py-16 sm:py-20 bg-blue-600 text-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-3xl sm:text-4xl font-bold mb-6">¡Ofertas Especiales del Mes!</h2>
+                <p class="text-lg sm:text-xl mb-10 max-w-2xl mx-auto">No te pierdas nuestros descuentos exclusivos en combos y equipamiento seleccionado. ¡Equípate al mejor precio!</p>
+                <a href="#" class="bg-yellow-400 text-blue-700 font-semibold py-3 px-8 rounded-lg text-lg shadow-md hover:bg-yellow-300 transform hover:scale-105 transition-all duration-300">Ver Todas las Ofertas</a>
+            </div>
+        </section>
+
+        <!-- About Us Section -->
+        <section id="nosotros" class="py-16 sm:py-20 bg-gray-50">
+             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl sm:text-4xl font-bold text-slate-700">Sobre AventuraPesca</h2>
+                    <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">Somos apasionados por la pesca, igual que tú. Nuestro objetivo es ofrecerte los mejores productos y el asesoramiento experto para que cada salida sea una experiencia única.</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8 text-center">
+                    <div class="p-6 bg-white rounded-lg shadow-lg"><div class="text-blue-500 mb-4"><svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div><h3 class="text-xl font-semibold mb-2 text-slate-700">Calidad Garantizada</h3><p class="text-gray-600 text-sm">Seleccionamos solo productos de marcas reconocidas y alta durabilidad.</p></div>
+                    <div class="p-6 bg-white rounded-lg shadow-lg"><div class="text-blue-500 mb-4"><svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg></div><h3 class="text-xl font-semibold mb-2 text-slate-700">Asesoramiento Experto</h3><p class="text-gray-600 text-sm">Nuestro equipo está listo para ayudarte a elegir lo mejor para tu tipo de pesca.</p></div>
+                    <div class="p-6 bg-white rounded-lg shadow-lg"><div class="text-blue-500 mb-4"><svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg></div><h3 class="text-xl font-semibold mb-2 text-slate-700">Compra Segura</h3><p class="text-gray-600 text-sm">Plataforma de pago segura y envíos rápidos a todo el país.</p></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contacto" class="py-16 sm:py-20 bg-slate-700 text-gray-200">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl sm:text-4xl font-bold text-center mb-12 text-white">Contáctanos</h2>
+                <div class="max-w-3xl mx-auto bg-slate-600 p-8 rounded-xl shadow-2xl">
+                    <form action="#" method="POST">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div><label for="nombre" class="block text-sm font-medium mb-1">Nombre Completo</label><input type="text" name="nombre" id="nombre" class="w-full px-4 py-2.5 rounded-lg bg-slate-500 text-gray-100 border border-slate-400 focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none" placeholder="Tu Nombre"></div>
+                            <div><label for="email" class="block text-sm font-medium mb-1">Correo Electrónico</label><input type="email" name="email" id="email" class="w-full px-4 py-2.5 rounded-lg bg-slate-500 text-gray-100 border border-slate-400 focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none" placeholder="tu@email.com"></div>
+                        </div>
+                        <div class="mb-6"><label for="asunto" class="block text-sm font-medium mb-1">Asunto</label><input type="text" name="asunto" id="asunto" class="w-full px-4 py-2.5 rounded-lg bg-slate-500 text-gray-100 border border-slate-400 focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none" placeholder="Asunto de tu consulta"></div>
+                        <div class="mb-8"><label for="mensaje" class="block text-sm font-medium mb-1">Mensaje</label><textarea name="mensaje" id="mensaje" rows="5" class="w-full px-4 py-2.5 rounded-lg bg-slate-500 text-gray-100 border border-slate-400 focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none" placeholder="Escribe tu mensaje aquí..."></textarea></div>
+                        <div class="text-center"><button type="submit" class="btn-primary font-semibold py-3 px-10 rounded-lg text-lg shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300">Enviar Mensaje</button></div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Payment Options Section (initially hidden) -->
+    <section id="payment-section" class="hidden py-16 sm:py-20 bg-gray-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-6 sm:mb-12 text-slate-700">Finalizar Compra</h2>
+            
+            <div class="grid lg:grid-cols-5 gap-8 items-start">
+                <!-- Order Summary Column -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg h-fit lg:sticky lg:top-28"> 
+                    <h3 class="text-2xl font-semibold mb-6 text-slate-700 border-b pb-3">Resumen del Pedido</h3>
+                    <div id="payment-summary-items" class="max-h-64 overflow-y-auto space-y-3 mb-4 pr-1">
+                        <!-- Order items will be injected here -->
+                    </div>
+                    <div class="border-t pt-4 space-y-2">
+                        <div class="flex justify-between text-md text-gray-600">
+                            <span>Subtotal:</span>
+                            <span id="payment-summary-subtotal">ARS $0.00</span>
+                        </div>
+                        <div class="flex justify-between text-md text-gray-600">
+                            <span>Envío:</span>
+                            <span>A calcular</span>
+                        </div>
+                        <div class="flex justify-between text-xl font-bold text-slate-800 mt-2">
+                            <span>Total:</span>
+                            <span id="payment-summary-total">ARS $0.00</span>
+                        </div>
+                    </div>
+                    <button id="back-to-shop-button" class="mt-8 w-full btn-primary bg-gray-600 hover:bg-gray-500 font-semibold py-2.5 px-4 rounded-lg">
+                        Modificar Pedido
+                    </button>
+                </div>
+
+                <!-- Payment Methods Column -->
+                <div class="lg:col-span-3 bg-white p-6 sm:p-8 rounded-xl shadow-lg mt-8 lg:mt-0"> 
+                    <h3 class="text-2xl font-semibold mb-8 text-slate-700">Selecciona tu Forma de Pago</h3>
+                    <div class="space-y-6">
+                        <!-- Payment Option 1: Credit/Debit Card -->
+                        <div class="payment-option-card border border-gray-200 p-4 sm:p-6 rounded-lg cursor-pointer" data-target="#tarjeta-details">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-lg font-medium text-slate-700">Tarjeta de Crédito / Débito</h4>
+                                <div class="flex space-x-1 sm:space-x-2">
+                                    <img src="https://placehold.co/40x25/cccccc/333333?text=Visa" alt="Visa" class="h-5 sm:h-6 rounded">
+                                    <img src="https://placehold.co/40x25/cccccc/333333?text=MC" alt="Mastercard" class="h-5 sm:h-6 rounded">
+                                </div>
+                            </div>
+                            <div id="tarjeta-details" class="payment-details mt-4">
+                                <div class="border-t pt-4 space-y-4">
+                                    <div>
+                                        <label for="card-name" class="block text-sm font-medium text-gray-700 mb-1">Nombre en la tarjeta</label>
+                                        <input type="text" id="card-name" class="w-full px-3 py-2 rounded-md bg-gray-100 border border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Juan Perez">
+                                    </div>
+                                    <div>
+                                        <label for="card-number" class="block text-sm font-medium text-gray-700 mb-1">Número de la tarjeta</label>
+                                        <input type="text" id="card-number" class="w-full px-3 py-2 rounded-md bg-gray-100 border border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="0000 0000 0000 0000">
+                                    </div>
+                                    <div class="flex space-x-4">
+                                        <div class="flex-1">
+                                            <label for="card-expiry" class="block text-sm font-medium text-gray-700 mb-1">Vencimiento (MM/AA)</label>
+                                            <input type="text" id="card-expiry" class="w-full px-3 py-2 rounded-md bg-gray-100 border border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="12/28">
+                                        </div>
+                                        <div class="flex-1">
+                                            <label for="card-cvc" class="block text-sm font-medium text-gray-700 mb-1">CVC</label>
+                                            <input type="text" id="card-cvc" class="w-full px-3 py-2 rounded-md bg-gray-100 border border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="123">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Option 2: Mercado Pago -->
+                        <div class="payment-option-card border border-gray-200 p-4 sm:p-6 rounded-lg cursor-pointer" data-target="#mercadopago-details">
+                             <div class="flex items-center justify-between">
+                                <h4 class="text-lg font-medium text-slate-700">Mercado Pago</h4>
+                                <img src="https://img.icons8.com/color/48/mercado-pago.png" alt="Mercado Pago" class="h-7 sm:h-8">
+                            </div>
+                            <div id="mercadopago-details" class="payment-details mt-4">
+                                <div class="border-t pt-4">
+                                    <p class="text-gray-600 text-sm mb-4">Serás redirigido a la página de Mercado Pago para completar tu compra de forma segura.</p>
+                                    <button class="w-full flex items-center justify-center bg-[#009EE3] hover:bg-[#007ABF] text-white font-semibold py-2.5 rounded-md transition-colors">
+                                        <img src="https://img.icons8.com/color/48/mercado-pago.png" alt="Mercado Pago" class="h-6 mr-2">
+                                        Pagar con Mercado Pago
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Option 3: Bank Transfer -->
+                        <div class="payment-option-card border border-gray-200 p-4 sm:p-6 rounded-lg cursor-pointer" data-target="#transferencia-details">
+                            <h4 class="text-lg font-medium text-slate-700">Transferencia Bancaria</h4>
+                            <div id="transferencia-details" class="payment-details mt-4">
+                                <div class="border-t pt-4 space-y-2 text-gray-700 text-sm bg-gray-50 p-4 rounded-md">
+                                    <p>Por favor, realiza la transferencia a la siguiente cuenta y envía el comprobante a <span class="font-semibold">pagos@aventurapesca.com</span>.</p>
+                                    <p class="mt-3"><strong class="w-20 inline-block">Titular:</strong> Juan Pescador</p>
+                                    <p><strong class="w-20 inline-block">CUIT:</strong> 20-12345678-9</p>
+                                    <p><strong class="w-20 inline-block">Banco:</strong> Banco de la Nación Argentina</p>
+                                    <p><strong class="w-20 inline-block">CBU:</strong> 0110123456789012345678</p>
+                                    <p><strong class="w-20 inline-block">Alias:</strong> AVENTURA.PESCA.ARG</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="confirm-payment-button" class="mt-10 w-full btn-primary font-semibold py-3 px-6 rounded-lg text-lg">
+                        Confirmar Pago (Simulado)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-gray-300 py-12">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div><h3 class="text-xl font-semibold text-white mb-4">Aventura<span class="text-blue-400">Pesca</span></h3><p class="text-sm">Tu tienda de confianza para equipamiento de pesca. Calidad, variedad y el mejor servicio.</p></div>
+                <div><h3 class="text-xl font-semibold text-white mb-4">Enlaces Rápidos</h3><ul class="space-y-2 text-sm"><li><a href="#productos" class="hover:text-blue-300">Productos</a></li><li><a href="#ofertas" class="hover:text-blue-300">Ofertas Especiales</a></li><li><a href="#" class="hover:text-blue-300">Política de Devoluciones</a></li><li><a href="#" class="hover:text-blue-300">Términos y Condiciones</a></li></ul></div>
+                <div><h3 class="text-xl font-semibold text-white mb-4">Síguenos</h3><div class="flex space-x-4"><a href="#" class="text-gray-400 hover:text-blue-300"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd" /></svg></a><a href="#" class="text-gray-400 hover:text-blue-300"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.024.06 1.378.06 3.808s-.012 2.784-.06 3.808c-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.024.048-1.378.06-3.808.06s-2.784-.012-3.808-.06c-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.048-1.024-.06-1.378-.06-3.808s.012-2.784.06-3.808c.049-1.064.218-1.791.465 2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.023.047 1.351.058 3.807.058h.468c2.456 0 2.784-.011 3.807-.058.975-.045 1.504.207 1.857-.344.467-.182-.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353-.3-.882.344-1.857.047-1.023.058-1.351.058-3.807v-.468c0-2.456-.011-2.784-.058-3.807-.045-.975-.207-1.504-.344-1.857-.182-.467-.399-.8-.748-1.15-.35-.35-.683-.566-1.15-.748-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clip-rule="evenodd" /></svg></a><a href="#" class="text-gray-400 hover:text-blue-300"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" /></svg></a></div></div>
+            </div>
+            <div class="text-center text-sm border-t border-slate-700 pt-8">
+                <p>&copy; <span id="currentYear"></span> AventuraPesca. Todos los derechos reservados.</p>
+                <p>Diseñado con <span class="text-red-500">❤</span> por entusiastas de la pesca.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Shopping Cart Modal -->
+    <div id="cart-modal" class="fixed inset-0 z-[100] hidden overflow-y-auto bg-gray-600 bg-opacity-75 transition-opacity" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex min-h-full items-center justify-center p-4 text-center sm:items-center sm:p-0">
+            <div id="cart-modal-content" class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
+                <!-- Modal header -->
+                <div class="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
+                    <h3 class="text-xl font-semibold leading-6 text-gray-900" id="modal-title">Tu Carrito de Compras</h3>
+                    <button type="button" id="close-cart-modal-button-x" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                    </button>
+                </div>
+                <!-- Modal body (scrollable items) -->
+                <div id="cart-items-container" class="p-6"> 
+                    <p id="empty-cart-message" class="text-gray-500 text-center py-4">Tu carrito está vacío.</p>
+                </div>
+                <!-- Modal footer -->
+                <div class="border-t border-gray-200 px-4 py-4 sm:px-6 flex-shrink-0">
+                     <div class="flex justify-between text-lg font-medium text-gray-900">
+                        <p>Total:</p>
+                        <p id="cart-total-price">ARS $0.00</p>
+                    </div>
+                    <p class="mt-1 text-sm text-gray-500">Envío e impuestos se calcularán al finalizar la compra.</p>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 rounded-b-lg flex-shrink-0">
+                    <button type="button" id="checkout-button" class="inline-flex w-full justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto disabled:opacity-50" disabled>
+                        Finalizar Compra
+                    </button>
+                    <button type="button" id="close-cart-modal-button-footer" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">
+                        Seguir Comprando
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification-toast" class="fixed bottom-5 right-5 bg-green-500 text-white py-3 px-5 rounded-lg shadow-xl text-sm transition-opacity duration-300 opacity-0 z-[150]">
+        <!-- Mensaje de notificación -->
+    </div>
+
+    <script>
+        // DOM Elements
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const cartButton = document.getElementById('cart-button');
+        const cartModal = document.getElementById('cart-modal');
+        const closeCartModalButtonX = document.getElementById('close-cart-modal-button-x');
+        const closeCartModalButtonFooter = document.getElementById('close-cart-modal-button-footer');
+        const cartItemsContainer = document.getElementById('cart-items-container');
+        const cartCountElement = document.getElementById('cart-count');
+        const cartTotalPriceElement = document.getElementById('cart-total-price');
+        const emptyCartMessage = document.getElementById('empty-cart-message');
+        const checkoutButton = document.getElementById('checkout-button');
+        const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
+        const notificationToast = document.getElementById('notification-toast');
+
+        const mainContent = document.getElementById('main-content');
+        const paymentSection = document.getElementById('payment-section');
+        const paymentSummaryItemsContainer = document.getElementById('payment-summary-items');
+        const paymentSummarySubtotal = document.getElementById('payment-summary-subtotal');
+        const paymentSummaryTotal = document.getElementById('payment-summary-total');
+        const backToShopButton = document.getElementById('back-to-shop-button');
+        const confirmPaymentButton = document.getElementById('confirm-payment-button');
+        const paymentOptionCards = document.querySelectorAll('.payment-option-card');
+
+        let cart = [];
+
+        // ----- Event Listeners -----
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId === '#' || targetId === '') return; 
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    if (!paymentSection.classList.contains('hidden') && targetId !== '#payment-section') {
+                        paymentSection.classList.add('hidden');
+                        mainContent.classList.remove('hidden');
+                    }
+                    const headerOffset = document.querySelector('header.sticky')?.offsetHeight || 0;
+                    const elementPosition = targetElement.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                    window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+
+        cartButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!paymentSection.classList.contains('hidden')) {
+                 paymentSection.classList.add('hidden');
+                 mainContent.classList.remove('hidden');
+                 document.querySelector('#productos').scrollIntoView({ behavior: 'smooth' });
+            }
+            toggleCartModal();
+        });
+        closeCartModalButtonX.addEventListener('click', toggleCartModal);
+        closeCartModalButtonFooter.addEventListener('click', toggleCartModal);
+
+        addToCartButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const productCard = e.target.closest('.product-card');
+                if (!productCard) return;
+
+                const productId = productCard.dataset.id;
+                const productName = productCard.dataset.name;
+                const productPrice = parseFloat(productCard.dataset.price);
+                const productImage = productCard.dataset.image;
+
+                if (productId && productName && !isNaN(productPrice) && productImage) {
+                    addItemToCart(productId, productName, productPrice, productImage);
+                    showNotification('¡Producto añadido al carrito!');
+                }
+            });
+        });
+        
+        checkoutButton.addEventListener('click', () => {
+            if (cart.length > 0) {
+                toggleCartModal();
+                displayPaymentSection();
+            }
+        });
+
+        backToShopButton.addEventListener('click', () => {
+            paymentSection.classList.add('hidden');
+            mainContent.classList.remove('hidden');
+            document.querySelector('#productos')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        
+        paymentOptionCards.forEach(card => {
+            card.addEventListener('click', () => {
+                paymentOptionCards.forEach(c => {
+                    c.classList.remove('selected', 'border-blue-500', 'ring-2', 'ring-blue-300');
+                    const details = document.querySelector(c.dataset.target);
+                    if (details) {
+                        details.classList.remove('visible');
+                    }
+                });
+                card.classList.add('selected', 'border-blue-500', 'ring-2', 'ring-blue-300');
+                const targetId = card.dataset.target;
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.classList.add('visible');
+                }
+            });
+        });
+        
+        confirmPaymentButton.addEventListener('click', () => {
+            const selectedOption = document.querySelector('.payment-option-card.selected');
+            if (!selectedOption) {
+                showNotification('Por favor, selecciona un método de pago.', true);
+                return;
+            }
+            showNotification('Procesando pago...', false, 3000); 
+            setTimeout(() => {
+                cart = [];
+                updateCartDisplay();
+                paymentSection.classList.add('hidden');
+                mainContent.classList.remove('hidden');
+                document.querySelector('#home')?.scrollIntoView({ behavior: 'smooth' });
+                showNotification('¡Pago completado con éxito! Gracias por tu compra.', false, 5000);
+                document.querySelectorAll('.payment-details.visible').forEach(el => el.classList.remove('visible'));
+                document.querySelectorAll('.payment-option-card.selected').forEach(el => el.classList.remove('selected', 'border-blue-500', 'ring-2', 'ring-blue-300'));
+            }, 3000);
+        });
+
+        function toggleCartModal() {
+            cartModal.classList.toggle('hidden');
+            document.body.classList.toggle('overflow-hidden', !cartModal.classList.contains('hidden'));
+        }
+
+        function formatPrice(amount) {
+            return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(amount);
+        }
+
+        function showNotification(message, isError = false, duration = 3000) {
+            notificationToast.textContent = message;
+            notificationToast.classList.remove('bg-green-500', 'bg-red-500', 'opacity-0', 'opacity-100');
+            notificationToast.classList.add(isError ? 'bg-red-500' : 'bg-green-500', 'opacity-100');
+            setTimeout(() => {
+                notificationToast.classList.remove('opacity-100');
+                notificationToast.classList.add('opacity-0');
+            }, duration);
+        }
+        
+        function addItemToCart(id, name, price, image) {
+            const existingItem = cart.find(item => item.id === id);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({ id, name, price, image, quantity: 1 });
+            }
+            updateCartDisplay();
+        }
+
+        function updateItemQuantity(id, newQuantity) {
+            const itemInCart = cart.find(item => item.id === id);
+            if (itemInCart) {
+                if (newQuantity <= 0) {
+                    removeItemFromCart(id);
+                } else {
+                    itemInCart.quantity = newQuantity;
+                }
+            }
+            updateCartDisplay();
+        }
+
+        function removeItemFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            updateCartDisplay();
+        }
+
+        function updateCartDisplay() {
+            const itemsToRemove = cartItemsContainer.querySelectorAll('.cart-item');
+            itemsToRemove.forEach(item => item.remove());
+
+            if (cart.length === 0) {
+                emptyCartMessage.classList.remove('hidden');
+                checkoutButton.disabled = true;
+                checkoutButton.classList.add('opacity-50', 'cursor-not-allowed');
+                checkoutButton.classList.remove('hover:bg-blue-500');
+            } else {
+                emptyCartMessage.classList.add('hidden');
+                checkoutButton.disabled = false;
+                checkoutButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                checkoutButton.classList.add('hover:bg-blue-500');
+                
+                cart.forEach(item => {
+                    const itemElement = document.createElement('div');
+                    itemElement.classList.add('cart-item', 'py-4', 'flex', 'items-center', 'border-b', 'border-gray-200', 'last:border-b-0');
+                    itemElement.dataset.id = item.id;
+                    itemElement.innerHTML = `
+                        <img src="${item.image}" alt="${item.name}" class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-md mr-3 sm:mr-4 flex-shrink-0">
+                        <div class="flex-grow min-w-0">
+                            <h4 class="font-semibold text-gray-800 text-sm sm:text-base truncate" title="${item.name}">${item.name}</h4>
+                            <p class="text-xs sm:text-sm text-gray-500">${formatPrice(item.price)}</p>
+                        </div>
+                        <div class="flex items-center mx-1 sm:mx-2 flex-shrink-0">
+                            <button class="quantity-decrease text-lg p-1 rounded hover:bg-gray-200" data-id="${item.id}">-</button>
+                            <span class="quantity mx-1 sm:mx-2 w-6 text-center">${item.quantity}</span>
+                            <button class="quantity-increase text-lg p-1 rounded hover:bg-gray-200" data-id="${item.id}">+</button>
+                        </div>
+                        <div class="text-right w-20 sm:w-24 flex-shrink-0">
+                            <p class="font-semibold text-gray-800 item-subtotal text-sm sm:text-base">${formatPrice(item.price * item.quantity)}</p>
+                        </div>
+                        <button class="remove-from-cart-btn ml-2 sm:ml-3 text-red-500 hover:text-red-700 p-1 flex-shrink-0" data-id="${item.id}">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    `;
+                    cartItemsContainer.insertBefore(itemElement, emptyCartMessage);
+                });
+            }
+
+            cartItemsContainer.querySelectorAll('.quantity-decrease').forEach(button => {
+                button.addEventListener('click', (e) => { 
+                    const itemId = e.currentTarget.dataset.id;
+                    const itemInCart = cart.find(item => item.id === itemId);
+                    if (itemInCart) updateItemQuantity(itemId, itemInCart.quantity - 1);
+                });
+            });
+            cartItemsContainer.querySelectorAll('.quantity-increase').forEach(button => {
+                button.addEventListener('click', (e) => { 
+                    const itemId = e.currentTarget.dataset.id;
+                    const itemInCart = cart.find(item => item.id === itemId);
+                    if (itemInCart) updateItemQuantity(itemId, itemInCart.quantity + 1);
+                });
+            });
+            cartItemsContainer.querySelectorAll('.remove-from-cart-btn').forEach(button => {
+                button.addEventListener('click', (e) => { removeItemFromCart(e.currentTarget.dataset.id); });
+            });
+            updateCartTotals();
+        }
+
+        function updateCartTotals() {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+            cartCountElement.textContent = totalItems;
+            if (totalItems > 0) {
+                cartCountElement.classList.remove('hidden');
+            } else {
+                 cartCountElement.classList.add('hidden');
+            }
+            cartTotalPriceElement.textContent = formatPrice(totalPrice);
+            paymentSummarySubtotal.textContent = formatPrice(totalPrice);
+            paymentSummaryTotal.textContent = formatPrice(totalPrice);
+        }
+        
+        function displayPaymentSection() {
+            mainContent.classList.add('hidden');
+            paymentSection.classList.remove('hidden');
+            setTimeout(() => {
+                paymentSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+
+            paymentSummaryItemsContainer.innerHTML = '';
+            if (cart.length > 0) {
+                cart.forEach(item => {
+                    const summaryItemEl = document.createElement('div');
+                    summaryItemEl.classList.add('flex', 'justify-between', 'items-center', 'text-sm', 'py-1.5');
+                    summaryItemEl.innerHTML = `
+                        <div class="flex items-center min-w-0 mr-2">
+                            <img src="${item.image}" alt="${item.name}" class="w-10 h-10 object-cover rounded mr-2 flex-shrink-0">
+                            <div class="min-w-0"> 
+                                <span class="font-medium text-gray-700 block truncate" title="${item.name}">${item.name}</span>
+                                <span class="text-gray-500 block">x ${item.quantity}</span>
+                            </div>
+                        </div>
+                        <span class="text-gray-700 flex-shrink-0">${formatPrice(item.price * item.quantity)}</span>
+                    `;
+                    paymentSummaryItemsContainer.appendChild(summaryItemEl);
+                });
+            }
+            updateCartTotals();
+        }
+
+        // Initial setup
+        updateCartDisplay();
+    </script>
+</body>
+</html>
+
